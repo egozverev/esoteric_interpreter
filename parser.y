@@ -14,12 +14,74 @@
 	void yyerror(const char *s) {
 		fprintf(stderr, "error: %s\n", s);
 	}
-	bool check_def(std::string name){
-		return int_values.find(name) == int_values.end() &&
-			str_values.find(name) == str_values.end() &&
-			float_values.find(name) == float_values.end() &&
-			bool_values.find(name) == bool_values.end() &&
-			null_values.find(name) == null_values.end();
+	template <class T>
+	bool is_missing(const std::map<std::string, T>& values,const std::string& name){
+		return values.find(name) == values.end();
+	}
+	bool is_missing(const std::set <std::string>& values, const std::string name){
+		return values.find(name) == values.end();
+	}
+	bool check_def(const std::string& name){
+		return is_missing(int_values, name) && is_missing(str_values, name) &&
+		is_missing(float_values, name) && is_missing(bool_values, name) && is_missing(null_values, name);
+
+	}
+	bool check_redeclaration(const std::string& name){
+		if(!check_def(name)){
+			yyerror("redeclaration error\n");
+			return false;
+		}
+		return true;
+	}
+	bool check_declaration(const std::string& name){
+		if(check_def(name)){
+			yyerror("variable was not declared\n");
+			return false;
+		}
+		return true;
+	}
+	template<class T>
+	bool try_erase(T& values, const std::string& name){
+		auto it = values.find(name);
+		if(it != values.end()){
+			values.erase(it);
+			return true;
+		}
+		return false;
+	}
+	template<class T> 
+	bool try_print(const T& values, const std::string& name){
+		auto it = values.find(name);
+		if( it != values.end()){
+			std::cout << (*it).second << "\n";
+			return true;
+		}
+		return false;
+	}
+	bool try_print(const std::set <std::string>& values, const std::string name){
+		if(values.find(name) != values.end()){
+			std::cout << "none\n";
+			return true;
+		}
+		return false;
+	}
+	/*template<class T> 
+	bool check_aff(T& values, const std::string& name){
+		// check affiliation -  if name exists in values
+		return values.find(name) != values.end();
+	}*/
+	void free_name(const std::string& name){
+		if(try_erase(int_values, name) || try_erase(str_values, name) ||
+			try_erase(float_values, name) || try_erase(bool_values, name) || try_erase(null_values, name)){
+			return; // hack to avoid empty erases	
+		}
+
+	}
+	void print_val(const std::string& name){
+		if(try_print(int_values, name) || try_print(str_values, name) ||
+			try_print(float_values, name) || try_print(bool_values, name) || try_print(null_values, name)){
+			return; // hack to avoid empty tries	
+		}
 	}
 %}
 
@@ -30,11 +92,20 @@
 %token STRING
 %token INTEGER
 %token FLOAT
-%token BOOL 
+%token WIN
+%token FAIL 
 %token NOOB
 %token END
 %token ID
 %token PRINT
+%token ADD
+%token SUB
+%token MULT
+%token DIV
+%token MOD
+%token MAXX
+%token MINN
+%token BINAR
 
 %%
 program: START commands END {return 0;};
@@ -42,43 +113,80 @@ commands: /* nothing */
  | commands command
 
 command: definition
-	| print;
+	| print
+	| assignment;
 
-definition: DECL_FST ID {null_values.insert($2);}
-	| DECL_FST ID DECL_SND INTEGER {	
-		if(!check_def($2)){
-			yyerror("redeclaration error");		
+definition: DECL_FST ID {
+		if(check_redeclaration($2)){
+			null_values.emplace($2);
 		}
-		int val = stoi($4);
-		int_values.emplace($2, val);
+	}
+	| DECL_FST ID DECL_SND INTEGER {	
+		if(check_redeclaration($2)){
+			int val = stoi($4);
+			int_values.emplace($2, val);
+		}
 	}
 	| DECL_FST ID DECL_SND STRING {
-		if(!check_def($2)){
-					yyerror("redeclaration error");		
-				}
-		str_values.emplace($2, $4.substr(1, $4.size() - 2));
+		if(check_redeclaration($2)){
+			str_values.emplace($2, $4);
+		}
 	}
+	| DECL_FST ID DECL_SND WIN {
+		if(check_redeclaration($2)){
+			bool_values.emplace($2, true);
+		}
+	}
+	| DECL_FST ID DECL_SND FAIL {
+		if(check_redeclaration($2)){
+			bool_values.emplace($2, false);
+		}
+	}
+	| DECL_FST ID DECL_SND FLOAT {
+		if(check_redeclaration($2)){
+			float_values.emplace($2, stod($4));
+		}
+	}
+	;
 
 print: PRINT ID {
-	if(auto it = int_values.find($2) != int_values.end()){
-		std::cout << int_values[$2] << "\n";
+	print_val($2);
 	}
-	else if(auto it = str_values.find($2) != str_values.end()){
-		std::cout << str_values[$2] << "\n";
+	;
+assignment: 
+	ID ASSIGN INTEGER {
+		if(check_declaration($1)){
+			free_name($1);
+			int_values.emplace($1, stoi($3));
+		}
 	}
-	else if(auto it = float_values.find($2) != float_values.end()){
-		std::cout << float_values[$2] << "\n";
+	| ID ASSIGN STRING{
+		if(check_declaration($1)){
+			free_name($1);
+			str_values.emplace($1, $3);
+		}
 	}
-	else if(auto it = bool_values.find($2) != bool_values.end()){
-		std::cout << (int_values[$2] ? "WIN" : "FAIL") << "\n";
+	| ID ASSIGN WIN{
+		if(check_declaration($1)){
+			free_name($1);
+			bool_values.emplace($1, true);
+		}
 	}
-	else if(auto it = null_values.find($2) != null_values.end()){
-		std::cout << "null\n";
+	| ID ASSIGN FAIL{
+		if(check_declaration($1)){
+			free_name($1);
+			bool_values.emplace($1, false);
+		}
 	}
-	else {
-		yyerror("wrong name");
+	| ID ASSIGN FLOAT{
+		if(check_declaration($1)){
+			free_name($1);
+			float_values.emplace($1, stod($3));
+		}
 	}
-	}
+	;
+/*var: INTEGER | FLOAT;
+arithmetics: var| BOOL |*/ 
 %%
 
 

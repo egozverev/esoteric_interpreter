@@ -1,0 +1,314 @@
+Nonterminals useless in grammar
+
+   var
+
+
+Terminals unused in grammar
+
+   NOOB
+
+
+Rules useless in grammar
+
+   19 var: INTEGER
+   20    | FLOAT
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: START commands END
+
+    2 commands: %empty
+    3         | commands command
+
+    4 command: definition
+    5        | print
+    6        | assignment
+
+    7 definition: DECL_FST ID
+    8           | DECL_FST ID DECL_SND INTEGER
+    9           | DECL_FST ID DECL_SND STRING
+   10           | DECL_FST ID DECL_SND WIN
+   11           | DECL_FST ID DECL_SND FAIL
+   12           | DECL_FST ID DECL_SND FLOAT
+
+   13 print: PRINT ID
+
+   14 assignment: ID ASSIGN INTEGER
+   15           | ID ASSIGN STRING
+   16           | ID ASSIGN WIN
+   17           | ID ASSIGN FAIL
+   18           | ID ASSIGN FLOAT
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256)
+START (258) 1
+DECL_FST (259) 7 8 9 10 11 12
+DECL_SND (260) 8 9 10 11 12
+ASSIGN (261) 14 15 16 17 18
+STRING (262) 9 15
+INTEGER (263) 8 14
+FLOAT (264) 12 18
+WIN (265) 10 16
+FAIL (266) 11 17
+NOOB (267)
+END (268) 1
+ID (269) 7 8 9 10 11 12 13 14 15 16 17 18
+PRINT (270) 13
+
+
+Nonterminals, with rules where they appear
+
+$accept (16)
+    on left: 0
+program (17)
+    on left: 1, on right: 0
+commands (18)
+    on left: 2 3, on right: 1 3
+command (19)
+    on left: 4 5 6, on right: 3
+definition (20)
+    on left: 7 8 9 10 11 12, on right: 4
+print (21)
+    on left: 13, on right: 5
+assignment (22)
+    on left: 14 15 16 17 18, on right: 6
+
+
+State 0
+
+    0 $accept: . program $end
+
+    START  shift, and go to state 1
+
+    program  go to state 2
+
+
+State 1
+
+    1 program: START . commands END
+
+    $default  reduce using rule 2 (commands)
+
+    commands  go to state 3
+
+
+State 2
+
+    0 $accept: program . $end
+
+    $end  shift, and go to state 4
+
+
+State 3
+
+    1 program: START commands . END
+    3 commands: commands . command
+
+    DECL_FST  shift, and go to state 5
+    END       shift, and go to state 6
+    ID        shift, and go to state 7
+    PRINT     shift, and go to state 8
+
+    command     go to state 9
+    definition  go to state 10
+    print       go to state 11
+    assignment  go to state 12
+
+
+State 4
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+State 5
+
+    7 definition: DECL_FST . ID
+    8           | DECL_FST . ID DECL_SND INTEGER
+    9           | DECL_FST . ID DECL_SND STRING
+   10           | DECL_FST . ID DECL_SND WIN
+   11           | DECL_FST . ID DECL_SND FAIL
+   12           | DECL_FST . ID DECL_SND FLOAT
+
+    ID  shift, and go to state 13
+
+
+State 6
+
+    1 program: START commands END .
+
+    $default  reduce using rule 1 (program)
+
+
+State 7
+
+   14 assignment: ID . ASSIGN INTEGER
+   15           | ID . ASSIGN STRING
+   16           | ID . ASSIGN WIN
+   17           | ID . ASSIGN FAIL
+   18           | ID . ASSIGN FLOAT
+
+    ASSIGN  shift, and go to state 14
+
+
+State 8
+
+   13 print: PRINT . ID
+
+    ID  shift, and go to state 15
+
+
+State 9
+
+    3 commands: commands command .
+
+    $default  reduce using rule 3 (commands)
+
+
+State 10
+
+    4 command: definition .
+
+    $default  reduce using rule 4 (command)
+
+
+State 11
+
+    5 command: print .
+
+    $default  reduce using rule 5 (command)
+
+
+State 12
+
+    6 command: assignment .
+
+    $default  reduce using rule 6 (command)
+
+
+State 13
+
+    7 definition: DECL_FST ID .
+    8           | DECL_FST ID . DECL_SND INTEGER
+    9           | DECL_FST ID . DECL_SND STRING
+   10           | DECL_FST ID . DECL_SND WIN
+   11           | DECL_FST ID . DECL_SND FAIL
+   12           | DECL_FST ID . DECL_SND FLOAT
+
+    DECL_SND  shift, and go to state 16
+
+    $default  reduce using rule 7 (definition)
+
+
+State 14
+
+   14 assignment: ID ASSIGN . INTEGER
+   15           | ID ASSIGN . STRING
+   16           | ID ASSIGN . WIN
+   17           | ID ASSIGN . FAIL
+   18           | ID ASSIGN . FLOAT
+
+    STRING   shift, and go to state 17
+    INTEGER  shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    WIN      shift, and go to state 20
+    FAIL     shift, and go to state 21
+
+
+State 15
+
+   13 print: PRINT ID .
+
+    $default  reduce using rule 13 (print)
+
+
+State 16
+
+    8 definition: DECL_FST ID DECL_SND . INTEGER
+    9           | DECL_FST ID DECL_SND . STRING
+   10           | DECL_FST ID DECL_SND . WIN
+   11           | DECL_FST ID DECL_SND . FAIL
+   12           | DECL_FST ID DECL_SND . FLOAT
+
+    STRING   shift, and go to state 22
+    INTEGER  shift, and go to state 23
+    FLOAT    shift, and go to state 24
+    WIN      shift, and go to state 25
+    FAIL     shift, and go to state 26
+
+
+State 17
+
+   15 assignment: ID ASSIGN STRING .
+
+    $default  reduce using rule 15 (assignment)
+
+
+State 18
+
+   14 assignment: ID ASSIGN INTEGER .
+
+    $default  reduce using rule 14 (assignment)
+
+
+State 19
+
+   18 assignment: ID ASSIGN FLOAT .
+
+    $default  reduce using rule 18 (assignment)
+
+
+State 20
+
+   16 assignment: ID ASSIGN WIN .
+
+    $default  reduce using rule 16 (assignment)
+
+
+State 21
+
+   17 assignment: ID ASSIGN FAIL .
+
+    $default  reduce using rule 17 (assignment)
+
+
+State 22
+
+    9 definition: DECL_FST ID DECL_SND STRING .
+
+    $default  reduce using rule 9 (definition)
+
+
+State 23
+
+    8 definition: DECL_FST ID DECL_SND INTEGER .
+
+    $default  reduce using rule 8 (definition)
+
+
+State 24
+
+   12 definition: DECL_FST ID DECL_SND FLOAT .
+
+    $default  reduce using rule 12 (definition)
+
+
+State 25
+
+   10 definition: DECL_FST ID DECL_SND WIN .
+
+    $default  reduce using rule 10 (definition)
+
+
+State 26
+
+   11 definition: DECL_FST ID DECL_SND FAIL .
+
+    $default  reduce using rule 11 (definition)
