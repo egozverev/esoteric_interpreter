@@ -12,11 +12,13 @@ num 	[0-9]+
 %%
 "HAI"		{return START;}
 "KTHXBYE"	{return END;}
-"I HAS A"	{return DECL_FST;}
+"I HAVE A"	{return DECL_FST;}
 "ITZ" 		{return DECL_SND;}
 "R" 		{return ASSIGN;}
+"VISIBLE"	{return PRINT;}
 {id} 		{yylval = yytext; return ID; /* used {abbreviation} def*/} 
-{num}		{yylval = yytext; return INTERER; }
+{num}		{yylval = yytext; return INTEGER; }
+\".+\"		{yylval = yytext; return STRING; }
 [ \t\n]   	{ /* ignore white space */ }
 .		{ yyerror("Mystery character \n"); }
 %%

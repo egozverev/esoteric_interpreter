@@ -1,4 +1,3 @@
-# we call "make" with no arguments.
 run: parser.y lexer.l
 	bison -d parser.y --verbose
 	flex lexer.l
