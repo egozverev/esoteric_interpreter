@@ -4,44 +4,40 @@
 	#include <set>
 	#include <string>
 	#include <cstdlib>
-	#define YYSTYPE std::string
+	#include <variant>
+	struct None{
+	};
+	std::ostream& operator<< (std::ostream &out, const None& none){ out << "none"; }
+	using Value = std::variant<int, std::string, double, bool, None>;
+	using Values = std::map<std::string, Value>;
+	#define YYSTYPE Value
+	
 	int yylex();
-	std::map <std::string, int> int_values;
-	std::map <std::string, std::string> str_values;
-	std::map <std::string, double> float_values;
-	std::map <std::string, bool> bool_values;
-	std::set <std::string> null_values; 
+	Values values;
 	void yyerror(const char *s) {
 		fprintf(stderr, "error: %s\n", s);
 	}
-	template <class T>
-	bool is_missing(const std::map<std::string, T>& values,const std::string& name){
+	
+	bool check_def(const Values& values,const std::string& name){
 		return values.find(name) == values.end();
 	}
-	bool is_missing(const std::set <std::string>& values, const std::string name){
-		return values.find(name) == values.end();
-	}
-	bool check_def(const std::string& name){
-		return is_missing(int_values, name) && is_missing(str_values, name) &&
-		is_missing(float_values, name) && is_missing(bool_values, name) && is_missing(null_values, name);
 
-	}
-	bool check_redeclaration(const std::string& name){
-		if(!check_def(name)){
-			yyerror("redeclaration error\n");
+	bool check_redeclaration(const Values& values, const std::string& name){
+		if(!check_def(values, name)){
+			yyerror("redeclaration error");
 			return false;
 		}
 		return true;
 	}
-	bool check_declaration(const std::string& name){
-		if(check_def(name)){
-			yyerror("variable was not declared\n");
+	bool check_declaration(const Values& values, const std::string& name){
+		if(check_def(values, name)){
+			yyerror("variable was not declared");
 			return false;
 		}
 		return true;
 	}
-	template<class T>
-	bool try_erase(T& values, const std::string& name){
+	
+	bool free_name(Values& values, const std::string& name){
 		auto it = values.find(name);
 		if(it != values.end()){
 			values.erase(it);
@@ -49,40 +45,20 @@
 		}
 		return false;
 	}
-	template<class T> 
-	bool try_print(const T& values, const std::string& name){
+
+	bool print_val(const Values& values, const std::string& name){
+		auto PrintVisitor = [](const auto& elem) { std::cout << elem << "\n"; }; 
+		// lamba function whil will be applied to the cur element
 		auto it = values.find(name);
 		if( it != values.end()){
-			std::cout << (*it).second << "\n";
+			int index = ((*it).second).index();
+			std::visit(PrintVisitor, (*it).second);			
 			return true;
 		}
 		return false;
 	}
-	bool try_print(const std::set <std::string>& values, const std::string name){
-		if(values.find(name) != values.end()){
-			std::cout << "none\n";
-			return true;
-		}
-		return false;
-	}
-	/*template<class T> 
-	bool check_aff(T& values, const std::string& name){
-		// check affiliation -  if name exists in values
-		return values.find(name) != values.end();
-	}*/
-	void free_name(const std::string& name){
-		if(try_erase(int_values, name) || try_erase(str_values, name) ||
-			try_erase(float_values, name) || try_erase(bool_values, name) || try_erase(null_values, name)){
-			return; // hack to avoid empty erases	
-		}
 
-	}
-	void print_val(const std::string& name){
-		if(try_print(int_values, name) || try_print(str_values, name) ||
-			try_print(float_values, name) || try_print(bool_values, name) || try_print(null_values, name)){
-			return; // hack to avoid empty tries	
-		}
-	}
+	
 %}
 
 %token START
@@ -111,77 +87,32 @@
 program: START commands END {return 0;};
 commands: /* nothing */
  | commands command
-
+;
 command: definition
 	| print
 	| assignment;
-
+type: INTEGER | STRING | WIN | FAIL | FLOAT;
 definition: DECL_FST ID {
-		if(check_redeclaration($2)){
-			null_values.emplace($2);
+		if(check_redeclaration(values, std::get<1>($2))){
+			values.emplace(std::get<1>($2), None());
 		}
 	}
-	| DECL_FST ID DECL_SND INTEGER {	
-		if(check_redeclaration($2)){
-			int val = stoi($4);
-			int_values.emplace($2, val);
-		}
-	}
-	| DECL_FST ID DECL_SND STRING {
-		if(check_redeclaration($2)){
-			str_values.emplace($2, $4);
-		}
-	}
-	| DECL_FST ID DECL_SND WIN {
-		if(check_redeclaration($2)){
-			bool_values.emplace($2, true);
-		}
-	}
-	| DECL_FST ID DECL_SND FAIL {
-		if(check_redeclaration($2)){
-			bool_values.emplace($2, false);
-		}
-	}
-	| DECL_FST ID DECL_SND FLOAT {
-		if(check_redeclaration($2)){
-			float_values.emplace($2, stod($4));
+	| DECL_FST ID DECL_SND type {	
+		if(check_redeclaration(values, std::get<1>($2))){
+
+			values.emplace(std::get<1>($2), $4);
 		}
 	}
 	;
-
 print: PRINT ID {
-	print_val($2);
+	print_val(values, std::get<1>($2));
 	}
 	;
 assignment: 
-	ID ASSIGN INTEGER {
-		if(check_declaration($1)){
-			free_name($1);
-			int_values.emplace($1, stoi($3));
-		}
-	}
-	| ID ASSIGN STRING{
-		if(check_declaration($1)){
-			free_name($1);
-			str_values.emplace($1, $3);
-		}
-	}
-	| ID ASSIGN WIN{
-		if(check_declaration($1)){
-			free_name($1);
-			bool_values.emplace($1, true);
-		}
-	}
-	| ID ASSIGN FAIL{
-		if(check_declaration($1)){
-			free_name($1);
-			bool_values.emplace($1, false);
-		}
-	}
-	| ID ASSIGN FLOAT{
-		if(check_declaration($1)){
-			free_name($1);
-			float_values.emplace($1, stod($3));
+	ID ASSIGN type {
+		if(check_declaration(values, std::get<1>($1))){
+			free_name(values, std::get<1>($1));
+			values.emplace(std::get<1>($1), $3);
 		}
 	}
 	;

@@ -1,8 +1,17 @@
 %{
 	#include <string>
 	#include <iostream>
-	#define YYSTYPE std::string
+	#include <variant>
+	#include <map>
+	struct None{
+	};
+	std::ostream& operator<< (std::ostream &out, const None& none);
+	using Value = std::variant<int, std::string, double, bool, None>;
+	using Values = std::map<std::string, Value>;
+	#define YYSTYPE Value
 	void yyerror(const char *s);
+
+
 	# include "parser.tab.h"
 %}
 
@@ -17,8 +26,8 @@ num 	[0-9]+
 "ITZ" 		{return DECL_SND;}
 "R" 		{return ASSIGN;}
 "VISIBLE"	{return PRINT;}
-"WIN"		{return WIN;}
-"FAIL"		{return FAIL;}
+"WIN"		{yylval = true; return WIN;}
+"FAIL"		{yylval = false; return FAIL;}
 "SUM OF"	{return ADD;}
 "DIFF OF"	{return SUB;}
 "PRODUKT"	{return MULT;}
@@ -27,10 +36,11 @@ num 	[0-9]+
 "BIGGR OF"	{return MAXX;}
 "SMALLR OF"	{return MINN;}
 "AN"		{return BINAR;/*connection between two operands*/} 
-{id} 		{yylval = yytext; return ID; /* used {abbreviation} def*/} 
-{float}		{yylval = yytext; return FLOAT; }
-{num}		{yylval = yytext; return INTEGER; }
-\".+\"		{yylval = yytext; yylval.erase(yylval.begin()); yylval.pop_back(); return STRING; }
+{id} 		{yylval = std::string(yytext);return ID; /* used {abbreviation} def*/} 
+{float}		{yylval = atof(yytext); return FLOAT; }
+{num}		{yylval = atoi(yytext); return INTEGER; }
+
+\".+\"		{yylval = std::string(yytext); std::get<1>(yylval).erase(std::get<1>(yylval).begin()); std::get<1>(yylval).pop_back(); return STRING; }
 [ \t\n]   	{ /* ignore white space */ }
 .		{ yyerror("Mystery character \n"); }
 %%
