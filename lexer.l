@@ -35,6 +35,10 @@ num 	[0-9]+
 "MOD OF"	{return MOD;}
 "BIGGR OF"	{return MAXX;}
 "SMALLR OF"	{return MINN;}
+"BOTH OF"	{return AND;}
+"EITHER OF"	{return OR;}
+"WON OF"	{return XOR;}
+"NOT"		{return NOT;}
 "AN"		{return BINAR;/*connection between two operands*/} 
 {id} 		{yylval = std::string(yytext);return ID; /* used {abbreviation} def*/} 
 {float}		{yylval = atof(yytext); return FLOAT; }

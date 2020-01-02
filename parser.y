@@ -138,6 +138,13 @@
 		}
 		#include "defs.h"
 	};
+	struct and_first {
+		// bad but not that bad solution
+		bool operator() (bool& x, bool& y) {
+			x &= y;
+		}
+		//#include "defs.h"
+	};
 
 	
 
@@ -166,6 +173,10 @@
 %token MAXX
 %token MINN
 %token BINAR
+%token AND
+%token OR
+%token XOR
+%token NOT
 
 %%
 program: START commands END {return 0;};
