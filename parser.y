@@ -138,12 +138,36 @@
 		}
 		#include "defs.h"
 	};
-	struct and_first {
+	struct and_to_first {
 		// bad but not that bad solution
-		bool operator() (bool& x, bool& y) {
-			x &= y;
+		void operator() (bool& x, bool& y) {
+			x = x && y;
 		}
-		//#include "defs.h"
+		#include "defs_logic.h"
+	};
+	struct or_to_first {
+		// bad but not that bad solution
+		void operator() (bool& x, bool& y) {
+			x = x || y;
+		}
+		#include "defs_logic.h"
+	};
+	struct xor_to_first {
+		// bad but not that bad solution
+		void operator() (bool& x, bool& y) {
+			x = (x != y);
+		}
+		#include "defs_logic.h"
+	};
+	struct not_first {
+		// bad but not that bad solution
+		void operator() (bool& x) {
+			x = !x;
+		}
+		void operator() (int& x) {}
+		void operator() (std::string& x) {}
+		void operator() (double& x) {}
+		void operator() (None& x) {}
 	};
 
 	
@@ -186,13 +210,13 @@ commands: /* nothing */
 command: definition
 	| print
 	| assignment; 
-type: INTEGER | STRING | WIN | FAIL | FLOAT;
+type: INTEGER | STRING | FLOAT;
 definition: DECL_FST ID {
 		if(check_redeclaration(values, std::get<1>($2))){
 			values.emplace(std::get<1>($2), None());
 		}
 	}
-	| DECL_FST ID DECL_SND exp {	
+	| DECL_FST ID DECL_SND general_exp {	
 		if(check_redeclaration(values, std::get<1>($2))){
 
 			values.emplace(std::get<1>($2), $4);
@@ -202,12 +226,12 @@ definition: DECL_FST ID {
 print: PRINT ID {
 	print_val(values, std::get<1>($2));
 	}
-	| PRINT exp{
+	| PRINT general_exp{
 		print_exp($2);
 	}
 	;
 assignment: 
-	ID ASSIGN exp {
+	ID ASSIGN general_exp {
 		if(check_declaration(values, std::get<1>($1))){
 			free_name(values, std::get<1>($1));
 			values.emplace(std::get<1>($1), $3);
@@ -252,7 +276,7 @@ exp: type
 		}
 		else{
 			Value new_val = $2;
-			std::visit(sub_from_first(), new_val, $4); // try to add them 
+			std::visit(sub_from_first(), new_val, $4);  
 			$$ = new_val;
 		}
 	}
@@ -265,7 +289,7 @@ exp: type
 			}
 			else{
 				Value new_val = fst;
-				std::visit(sub_from_first(), new_val, snd); // try to add them 
+				std::visit(sub_from_first(), new_val, snd); 
 				$$ = new_val;
 			}
 		}
@@ -277,7 +301,7 @@ exp: type
 		}
 		else{
 			Value new_val = $2;
-			std::visit(mult_first(), new_val, $4); // try to add them 
+			std::visit(mult_first(), new_val, $4);
 			$$ = new_val;
 		}
 	}
@@ -290,7 +314,7 @@ exp: type
 			}
 			else{
 				Value new_val = fst;
-				std::visit(mult_first(), new_val, snd); // try to add them 
+				std::visit(mult_first(), new_val, snd);
 				$$ = new_val;
 			}
 		}
@@ -302,7 +326,7 @@ exp: type
 		}
 		else{
 			Value new_val = $2;
-			std::visit(div_first(), new_val, $4); // try to add them 
+			std::visit(div_first(), new_val, $4); 
 			$$ = new_val;
 		}
 	}
@@ -315,7 +339,7 @@ exp: type
 			}
 			else{
 				Value new_val = fst;
-				std::visit(div_first(), new_val, snd); // try to add them 
+				std::visit(div_first(), new_val, snd); 
 				$$ = new_val;
 			}
 		}
@@ -327,7 +351,7 @@ exp: type
 		}
 		else{
 			Value new_val = $2;
-			std::visit(mod_first(), new_val, $4); // try to add them 
+			std::visit(mod_first(), new_val, $4);  
 			$$ = new_val;
 		}
 	}
@@ -340,7 +364,7 @@ exp: type
 			}
 			else{
 				Value new_val = fst;
-				std::visit(mod_first(), new_val, snd); // try to add them 
+				std::visit(mod_first(), new_val, snd); 
 				$$ = new_val;
 			}
 		}
@@ -352,7 +376,7 @@ exp: type
 		}
 		else{
 			Value new_val = $2;
-			std::visit(max_to_first(), new_val, $4); // try to add them 
+			std::visit(max_to_first(), new_val, $4);
 			$$ = new_val;
 		}
 	}
@@ -365,7 +389,7 @@ exp: type
 			}
 			else{
 				Value new_val = fst;
-				std::visit(max_to_first(), new_val, snd); // try to add them 
+				std::visit(max_to_first(), new_val, snd); 
 				$$ = new_val;
 			}
 		}
@@ -377,7 +401,7 @@ exp: type
 		}
 		else{
 			Value new_val = $2;
-			std::visit(min_to_first(), new_val, $4); // try to add them 
+			std::visit(min_to_first(), new_val, $4); 
 			$$ = new_val;
 		}
 	}
@@ -390,15 +414,87 @@ exp: type
 			}
 			else{
 				Value new_val = fst;
-				std::visit(min_to_first(), new_val, snd); // try to add them 
+				std::visit(min_to_first(), new_val, snd); 
 				$$ = new_val;
 			}
 		}
 		
 	}
  
+;
+bool_exp: WIN | FAIL
+	| AND bool_exp BINAR bool_exp{
+		Value new_val = $2;
+		std::visit(and_to_first(), new_val, $4);
+		$$ = new_val;
 
-; 
+	}
+	| AND ID BINAR ID{
+		if(check_declaration(values, std::get<1>($2)) && check_declaration(values, std::get<1>($4))){
+			Value& fst = values[std::get<1>($2)];
+			Value& snd = values[std::get<1>($4)];
+			Value new_val = fst;
+			std::visit(and_to_first(), new_val, snd); 
+			$$ = new_val;
+
+		}
+		
+	}
+	| OR bool_exp BINAR bool_exp{
+		Value new_val = $2;
+		std::visit(or_to_first(), new_val, $4);
+		$$ = new_val;
+
+	}
+	| OR ID BINAR ID{
+		if(check_declaration(values, std::get<1>($2)) && check_declaration(values, std::get<1>($4))){
+			Value& fst = values[std::get<1>($2)];
+			Value& snd = values[std::get<1>($4)];
+			Value new_val = fst;
+			std::visit(or_to_first(), new_val, snd); 
+			$$ = new_val;
+
+		}
+		
+	}
+	| XOR bool_exp BINAR bool_exp{
+		Value new_val = $2;
+		std::visit(xor_to_first(), new_val, $4);
+		$$ = new_val;
+
+	}
+	| XOR ID BINAR ID{
+		if(check_declaration(values, std::get<1>($2)) && check_declaration(values, std::get<1>($4))){
+			Value& fst = values[std::get<1>($2)];
+			Value& snd = values[std::get<1>($4)];
+			Value new_val = fst;
+			std::visit(xor_to_first(), new_val, snd); 
+			$$ = new_val;
+
+		}
+		
+	}
+	| NOT bool_exp{
+		Value new_val = $2;
+		std::visit(not_first(), new_val);
+		$$ = new_val;
+
+	}
+	| NOT ID{
+		if(check_declaration(values, std::get<1>($2))){
+			Value& fst = values[std::get<1>($2)];
+			Value new_val = fst;
+			std::visit(not_first(), new_val); 
+			$$ = new_val;
+
+		}
+		
+	}
+
+;
+general_exp: exp | bool_exp
+;
+	 
 %%
 
 

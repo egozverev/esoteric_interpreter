@@ -19,6 +19,6 @@ void operator() (None& x, bool& y) {}
 void operator() (double& x, None& y) {}
 void operator() (None& x, double& y) {}
 void operator() (None&, None&) {}
-void operator() (int& x, int& y) {]
+void operator() (int& x, int& y) {}
 void operator() (std::string& x, std::string& y) {}
-void operator() (double& x, double& y) {]
+void operator() (double& x, double& y) {}
