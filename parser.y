@@ -115,6 +115,11 @@ assignment:
 			values.emplace(std::get<1>($1), $3);
 		}
 	}
+	| ID ASSIGN ID{
+		if(check_declaration(values, std::get<1>($1)) && check_declaration(values, std::get<1>($3))){
+			$1 = $3;
+		}
+	}
 	;
 /*var: INTEGER | FLOAT;
 arithmetics: var| BOOL |*/ 
