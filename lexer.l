@@ -40,7 +40,7 @@ num 	[0-9]+
 {float}		{yylval = atof(yytext); return FLOAT; }
 {num}		{yylval = atoi(yytext); return INTEGER; }
 
-\".+\"		{yylval = std::string(yytext); std::get<1>(yylval).erase(std::get<1>(yylval).begin()); std::get<1>(yylval).pop_back(); return STRING; }
+\"[^"]*\"		{yylval = std::string(yytext); std::get<1>(yylval).erase(std::get<1>(yylval).begin()); std::get<1>(yylval).pop_back(); return STRING; }
 [ \t\n]   	{ /* ignore white space */ }
 .		{ yyerror("recognition error \n"); }
 %%

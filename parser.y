@@ -1,4 +1,5 @@
 %{
+	#include <algorithm>
 	#include <iostream>
 	#include <map>
 	#include <set>
@@ -73,22 +74,86 @@
 		void operator() (None&, None&) {}
 		void operator() (bool&, bool&) {}
 		#include "defs.h"
-
+	};
+	struct sub_from_first {
+		// bad but not that bad solution
+		void operator() (int& x, int& y) {
+			x -= y;
+		}
+		void operator() (std::string& x, std::string& y) {		}
+		void operator() (double& x, double& y) {
+			x -= y;
+		}
+		void operator() (None&, None&) {}
+		void operator() (bool&, bool&) {}
+		#include "defs.h"
+	};
+	struct mult_first {
+		// bad but not that bad solution
+		void operator() (int& x, int& y) {
+			x *= y;
+		}
+		void operator() (std::string& x, std::string& y) {}
+		void operator() (double& x, double& y) {
+			x *= y;
+		}
+		void operator() (None&, None&) {}
+		void operator() (bool&, bool&) {}
+		#include "defs.h"
 	};
 
-
-	/*Value add(const Value& arg1, const Value& arg2){
-		int index = arg1.index();
-		int index2 = arg2.index();
-		if(index != index2 || index > 2){
-			yyerror("incompatible type");
-			return None();
+	struct div_first {
+		// bad but not that bad solution
+		void operator() (int& x, int& y) {
+			x /= y;
 		}
-		Value x = 5;
-		return (std::visit(get_value(), x));// + std::visit(get_value(), arg2));
-		return 0;
-		
-	}*/
+		void operator() (std::string& x, std::string& y) {}
+		void operator() (double& x, double& y) {
+			x /= y;
+		}
+		void operator() (None&, None&) {}
+		void operator() (bool&, bool&) {}
+		#include "defs.h"
+	};
+	struct mod_first {
+		// bad but not that bad solution
+		void operator() (int& x, int& y) {
+			x %= y;
+		}
+		void operator() (std::string& x, std::string& y) {}
+		void operator() (double& x, double& y) {}
+		void operator() (None&, None&) {}
+		void operator() (bool&, bool&) {}
+		#include "defs.h"
+	};
+	struct max_to_first {
+		// bad but not that bad solution
+		void operator() (int& x, int& y) {
+			x = std::max(x, y);
+		}
+		void operator() (std::string& x, std::string& y) {}
+		void operator() (double& x, double& y) {
+			x = std::max(x, y);
+		}
+		void operator() (None&, None&) {}
+		void operator() (bool&, bool&) {}
+		#include "defs.h"
+	};
+	struct min_to_first {
+		// bad but not that bad solution
+		void operator() (int& x, int& y) {
+			x = std::min(x, y);
+		}
+		void operator() (std::string& x, std::string& y) {}
+		void operator() (double& x, double& y) {
+			x = std::min(x, y);
+		}
+		void operator() (None&, None&) {}
+		void operator() (bool&, bool&) {}
+		#include "defs.h"
+	};
+
+	
 
 
 	
@@ -166,6 +231,7 @@ exp: type
 			Value new_val = $2;
 			std::visit(add_to_first(), new_val, $4); // try to add them 
 			$$ = new_val;
+
 		}
 	}
 	| ADD ID BINAR ID{
@@ -178,6 +244,156 @@ exp: type
 			else{
 				Value new_val = fst;
 				std::visit(add_to_first(), new_val, snd); // try to add them 
+				$$ = new_val;
+			}
+		}
+		
+	}
+	| SUB exp BINAR exp{
+		if($2.index() != $4.index() || $2.index() >= 3 || $2.index() == 1){
+			yyerror("incompatible types");
+		}
+		else{
+			Value new_val = $2;
+			std::visit(sub_from_first(), new_val, $4); // try to add them 
+			$$ = new_val;
+		}
+	}
+	| SUB ID BINAR ID{
+		if(check_declaration(values, std::get<1>($2)) && check_declaration(values, std::get<1>($4))){
+			Value& fst = values[std::get<1>($2)];
+			Value& snd = values[std::get<1>($4)];
+			if(fst.index() != snd.index() || fst.index() >= 3 || fst.index() == 1){
+				yyerror("incompatible types");
+			}
+			else{
+				Value new_val = fst;
+				std::visit(sub_from_first(), new_val, snd); // try to add them 
+				$$ = new_val;
+			}
+		}
+		
+	}
+	| MULT exp BINAR exp{
+		if($2.index() != $4.index() || $2.index() >= 3 || $2.index() == 1){
+			yyerror("incompatible types");
+		}
+		else{
+			Value new_val = $2;
+			std::visit(mult_first(), new_val, $4); // try to add them 
+			$$ = new_val;
+		}
+	}
+	| MULT ID BINAR ID{
+		if(check_declaration(values, std::get<1>($2)) && check_declaration(values, std::get<1>($4))){
+			Value& fst = values[std::get<1>($2)];
+			Value& snd = values[std::get<1>($4)];
+			if(fst.index() != snd.index() || fst.index() >= 3 || fst.index() == 1){
+				yyerror("incompatible types");
+			}
+			else{
+				Value new_val = fst;
+				std::visit(mult_first(), new_val, snd); // try to add them 
+				$$ = new_val;
+			}
+		}
+		
+	}
+	| DIV exp BINAR exp{
+		if($2.index() != $4.index() || $2.index() >= 3 || $2.index() == 1){
+			yyerror("incompatible types");
+		}
+		else{
+			Value new_val = $2;
+			std::visit(div_first(), new_val, $4); // try to add them 
+			$$ = new_val;
+		}
+	}
+	| DIV ID BINAR ID{
+		if(check_declaration(values, std::get<1>($2)) && check_declaration(values, std::get<1>($4))){
+			Value& fst = values[std::get<1>($2)];
+			Value& snd = values[std::get<1>($4)];
+			if(fst.index() != snd.index() || fst.index() >= 3 || fst.index() == 1){
+				yyerror("incompatible types");
+			}
+			else{
+				Value new_val = fst;
+				std::visit(div_first(), new_val, snd); // try to add them 
+				$$ = new_val;
+			}
+		}
+		
+	}
+	| MOD exp BINAR exp{
+		if($2.index() != $4.index() || $2.index() > 0){
+			yyerror("incompatible types");
+		}
+		else{
+			Value new_val = $2;
+			std::visit(mod_first(), new_val, $4); // try to add them 
+			$$ = new_val;
+		}
+	}
+	| MOD ID BINAR ID{
+		if(check_declaration(values, std::get<1>($2)) && check_declaration(values, std::get<1>($4))){
+			Value& fst = values[std::get<1>($2)];
+			Value& snd = values[std::get<1>($4)];
+			if(fst.index() != snd.index() || fst.index() > 0){
+				yyerror("incompatible types");
+			}
+			else{
+				Value new_val = fst;
+				std::visit(mod_first(), new_val, snd); // try to add them 
+				$$ = new_val;
+			}
+		}
+		
+	}
+	| MAXX exp BINAR exp{
+		if($2.index() != $4.index() || $2.index() >= 3 || $2.index() == 1){
+			yyerror("incompatible types");
+		}
+		else{
+			Value new_val = $2;
+			std::visit(max_to_first(), new_val, $4); // try to add them 
+			$$ = new_val;
+		}
+	}
+	| MAXX ID BINAR ID{
+		if(check_declaration(values, std::get<1>($2)) && check_declaration(values, std::get<1>($4))){
+			Value& fst = values[std::get<1>($2)];
+			Value& snd = values[std::get<1>($4)];
+			if(fst.index() != snd.index() || fst.index() >= 3 || fst.index() == 1){
+				yyerror("incompatible types");
+			}
+			else{
+				Value new_val = fst;
+				std::visit(max_to_first(), new_val, snd); // try to add them 
+				$$ = new_val;
+			}
+		}
+		
+	}
+	| MINN exp BINAR exp{
+		if($2.index() != $4.index() || $2.index() >= 3 || $2.index() == 1){
+			yyerror("incompatible types");
+		}
+		else{
+			Value new_val = $2;
+			std::visit(min_to_first(), new_val, $4); // try to add them 
+			$$ = new_val;
+		}
+	}
+	| MINN ID BINAR ID{
+		if(check_declaration(values, std::get<1>($2)) && check_declaration(values, std::get<1>($4))){
+			Value& fst = values[std::get<1>($2)];
+			Value& snd = values[std::get<1>($4)];
+			if(fst.index() != snd.index() || fst.index() >= 3 || fst.index() == 1){
+				yyerror("incompatible types");
+			}
+			else{
+				Value new_val = fst;
+				std::visit(min_to_first(), new_val, snd); // try to add them 
 				$$ = new_val;
 			}
 		}
