@@ -71,8 +71,6 @@
 		void operator() (double& x, double& y) {
 			x += y;
 		}
-		void operator() (None&, None&) {}
-		void operator() (bool&, bool&) {}
 		#include "defs.h"
 	};
 	struct sub_from_first {
@@ -84,8 +82,6 @@
 		void operator() (double& x, double& y) {
 			x -= y;
 		}
-		void operator() (None&, None&) {}
-		void operator() (bool&, bool&) {}
 		#include "defs.h"
 	};
 	struct mult_first {
@@ -97,8 +93,6 @@
 		void operator() (double& x, double& y) {
 			x *= y;
 		}
-		void operator() (None&, None&) {}
-		void operator() (bool&, bool&) {}
 		#include "defs.h"
 	};
 
@@ -111,8 +105,6 @@
 		void operator() (double& x, double& y) {
 			x /= y;
 		}
-		void operator() (None&, None&) {}
-		void operator() (bool&, bool&) {}
 		#include "defs.h"
 	};
 	struct mod_first {
@@ -122,8 +114,6 @@
 		}
 		void operator() (std::string& x, std::string& y) {}
 		void operator() (double& x, double& y) {}
-		void operator() (None&, None&) {}
-		void operator() (bool&, bool&) {}
 		#include "defs.h"
 	};
 	struct max_to_first {
@@ -135,8 +125,6 @@
 		void operator() (double& x, double& y) {
 			x = std::max(x, y);
 		}
-		void operator() (None&, None&) {}
-		void operator() (bool&, bool&) {}
 		#include "defs.h"
 	};
 	struct min_to_first {
@@ -148,8 +136,6 @@
 		void operator() (double& x, double& y) {
 			x = std::min(x, y);
 		}
-		void operator() (None&, None&) {}
-		void operator() (bool&, bool&) {}
 		#include "defs.h"
 	};
 
