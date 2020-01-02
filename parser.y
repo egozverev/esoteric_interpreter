@@ -210,6 +210,13 @@
 program: START commands END {return 0;};
 commands: /* nothing */
 	| commands command
+	| WIN IF_BEGIN TRUE_BRANCH commands FALSE_BRANCH commands IF_END {
+		/*if(std::get<3>($1)){
+			
+		} else {
+			
+		}*/
+	}
 ;
 command: definition
 	| print
