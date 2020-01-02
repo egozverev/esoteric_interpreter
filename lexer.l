@@ -42,5 +42,5 @@ num 	[0-9]+
 
 \".+\"		{yylval = std::string(yytext); std::get<1>(yylval).erase(std::get<1>(yylval).begin()); std::get<1>(yylval).pop_back(); return STRING; }
 [ \t\n]   	{ /* ignore white space */ }
-.		{ yyerror("Mystery character \n"); }
+.		{ yyerror("recognition error \n"); }
 %%
