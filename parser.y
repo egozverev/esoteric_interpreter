@@ -201,15 +201,22 @@
 %token OR
 %token XOR
 %token NOT
-
+%token IF_BEGIN
+%token TRUE_BRANCH
+%token FALSE_BRANCH
+%token IF_END
+%token TRASH
 %%
 program: START commands END {return 0;};
 commands: /* nothing */
- | commands command
+	| commands command
 ;
 command: definition
 	| print
-	| assignment; 
+	| assignment
+; 
+
+
 type: INTEGER | STRING | FLOAT;
 definition: DECL_FST ID {
 		if(check_redeclaration(values, std::get<1>($2))){
@@ -422,6 +429,26 @@ exp: type
 	}
  
 ;
+
+/*true_exp: WIN 
+	| true_exp AND true_exp { $$ = true; }
+	| true_exp OR true_exp { $$ = true; }
+	| true_exp OR false_exp { $$ = true; }
+	| false_exp OR true_exp { $$ = true; }
+	| false_exp XOR true_exp { $$ = true; }
+	| true_exp XOR false_exp { $$ = true; }
+	| NOT false_exp { $$ = true; }
+;
+false_exp: FAIL
+	| false_exp AND false_exp { $$ = false; }
+	| false_exp AND true_exp { $$ = false; }
+	| true_exp AND false_exp { $$ = false; }
+	| false_exp OR false_exp { $$ = false; }
+	| false_exp XOR false_exp { $$ = false; }
+	| true_exp XOR true_exp { $$ = false; }
+	| NOT true_exp { $$ = false; }
+;	*/
+
 bool_exp: WIN | FAIL
 	| AND bool_exp BINAR bool_exp{
 		Value new_val = $2;
@@ -492,6 +519,9 @@ bool_exp: WIN | FAIL
 	}
 
 ;
+
+
+
 general_exp: exp | bool_exp
 ;
 	 

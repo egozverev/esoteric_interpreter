@@ -28,6 +28,10 @@ num 	[0-9]+
 "VISIBLE"	{return PRINT;}
 "WIN"		{yylval = true; return WIN;}
 "FAIL"		{yylval = false; return FAIL;}
+"O RLY?"	{return IF_BEGIN;}
+"YA RLY" 	{return TRUE_BRANCH;}
+"NO WAI"	{return FALSE_BRANCH;}
+"OIC"		{return IF_END;}
 "SUM OF"	{return ADD;}
 "DIFF OF"	{return SUB;}
 "PRODUKT"	{return MULT;}
