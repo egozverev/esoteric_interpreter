@@ -16,8 +16,8 @@
 %}
 
 id 	[_a-zA-Z][_a-zA-Z0-9]{0,30} 
-float	[0-9]+.[0-9]+
-num 	[0-9]+
+float	-?[0-9]+.[0-9]+
+num 	-?[0-9]+
 
 %%
 "HAI"		{return START;}
