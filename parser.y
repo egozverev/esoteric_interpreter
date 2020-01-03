@@ -210,13 +210,7 @@
 program: START commands END {return 0;};
 commands: /* nothing */
 	| commands command
-	| WIN IF_BEGIN TRUE_BRANCH commands FALSE_BRANCH commands IF_END {
-		/*if(std::get<3>($1)){
-			
-		} else {
-			
-		}*/
-	}
+	| WIN IF_BEGIN TRUE_BRANCH commands FALSE_BRANCH commands IF_END {}
 ;
 command: definition
 	| print
@@ -437,24 +431,7 @@ exp: type
  
 ;
 
-/*true_exp: WIN 
-	| true_exp AND true_exp { $$ = true; }
-	| true_exp OR true_exp { $$ = true; }
-	| true_exp OR false_exp { $$ = true; }
-	| false_exp OR true_exp { $$ = true; }
-	| false_exp XOR true_exp { $$ = true; }
-	| true_exp XOR false_exp { $$ = true; }
-	| NOT false_exp { $$ = true; }
-;
-false_exp: FAIL
-	| false_exp AND false_exp { $$ = false; }
-	| false_exp AND true_exp { $$ = false; }
-	| true_exp AND false_exp { $$ = false; }
-	| false_exp OR false_exp { $$ = false; }
-	| false_exp XOR false_exp { $$ = false; }
-	| true_exp XOR true_exp { $$ = false; }
-	| NOT true_exp { $$ = false; }
-;	*/
+
 
 bool_exp: WIN | FAIL
 	| AND bool_exp BINAR bool_exp{
